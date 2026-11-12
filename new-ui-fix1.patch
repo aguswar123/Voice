@@ -1,0 +1,90 @@
+diff --git a/features/playbackScreen/src/main/kotlin/voice/features/playbackScreen/newui/NewSheets.kt b/features/playbackScreen/src/main/kotlin/voice/features/playbackScreen/newui/NewSheets.kt
+index ab63168..5776a11 100644
+--- a/features/playbackScreen/src/main/kotlin/voice/features/playbackScreen/newui/NewSheets.kt
++++ b/features/playbackScreen/src/main/kotlin/voice/features/playbackScreen/newui/NewSheets.kt
+@@ -22,7 +22,6 @@ import androidx.compose.material3.FilterChip
+ import androidx.compose.material3.Icon
+ import androidx.compose.material3.IconButton
+ import androidx.compose.material3.MaterialTheme
+-import androidx.compose.material3.Slider
+ import androidx.compose.material3.Surface
+ import androidx.compose.material3.Switch
+ import androidx.compose.material3.Text
+@@ -381,13 +380,13 @@ private fun SettingsList(
+       listOf("sans" to "Sans", "serif" to "Serif", "mono" to "Mono", "cursive" to "Cursive"),
+       s.fontFamily,
+     ) { prefs.update { old -> old.copy(fontFamily = it) } }
+-    SliderRow("Font size", "${s.size} sp", s.size.toFloat(), 12F..40F) {
++    SliderRow("Font size", "${s.size} sp", s.size.toFloat(), 12F..40F, step = 1F) {
+       prefs.update { old -> old.copy(size = it.roundToInt()) }
+     }
+-    SliderRow("Line spacing", "%.2f".format(s.lineHeight), s.lineHeight, 1F..2F) {
++    SliderRow("Line spacing", "%.2f".format(s.lineHeight), s.lineHeight, 1F..2F, step = 0.05F) {
+       prefs.update { old -> old.copy(lineHeight = (it * 20).roundToInt() / 20F) }
+     }
+-    SliderRow("Font thickness", "${s.weight}", s.weight.toFloat(), 300F..700F, steps = 3) {
++    SliderRow("Font thickness", "${s.weight}", s.weight.toFloat(), 300F..700F, step = 100F) {
+       prefs.update { old -> old.copy(weight = (it / 100).roundToInt() * 100) }
+     }
+     Choice(
+@@ -395,7 +394,7 @@ private fun SettingsList(
+       listOf("left" to "Left", "center" to "Center", "justify" to "Justify"),
+       s.align,
+     ) { prefs.update { old -> old.copy(align = it) } }
+-    SliderRow("Current line position", "${s.anchor}%", s.anchor.toFloat(), 5F..60F) {
++    SliderRow("Current line position", "${s.anchor}%", s.anchor.toFloat(), 5F..60F, step = 5F) {
+       prefs.update { old -> old.copy(anchor = it.roundToInt()) }
+     }
+     SwitchRow("Keep all lines the same size", s.sameSize) {
+@@ -406,13 +405,13 @@ private fun SettingsList(
+     SwitchRow("Blur lines far from the current one", s.blur) {
+       prefs.update { old -> old.copy(blur = it) }
+     }
+-    SliderRow("Blur amount", "%.1f".format(s.blurAmount), s.blurAmount, 0F..8F) {
++    SliderRow("Blur amount", "%.1f".format(s.blurAmount), s.blurAmount, 0F..8F, step = 0.5F) {
+       prefs.update { old -> old.copy(blurAmount = (it * 2).roundToInt() / 2F) }
+     }
+-    SliderRow("Lines kept before", "${s.linesBefore}", s.linesBefore.toFloat(), 0F..6F, steps = 5) {
++    SliderRow("Lines kept before", "${s.linesBefore}", s.linesBefore.toFloat(), 0F..6F, step = 1F) {
+       prefs.update { old -> old.copy(linesBefore = it.roundToInt()) }
+     }
+-    SliderRow("Lines kept after", "${s.linesAfter}", s.linesAfter.toFloat(), 2F..14F, steps = 11) {
++    SliderRow("Lines kept after", "${s.linesAfter}", s.linesAfter.toFloat(), 2F..14F, step = 1F) {
+       prefs.update { old -> old.copy(linesAfter = it.roundToInt()) }
+     }
+ 
+@@ -432,10 +431,10 @@ private fun SettingsList(
+     SwitchRow("Keep the book's italics and bold", s.epOwnStyles) {
+       prefs.update { old -> old.copy(epOwnStyles = it) }
+     }
+-    SliderRow("EPUB text size", "${s.epSize} sp", s.epSize.toFloat(), 12F..36F) {
++    SliderRow("EPUB text size", "${s.epSize} sp", s.epSize.toFloat(), 12F..36F, step = 1F) {
+       prefs.update { old -> old.copy(epSize = it.roundToInt()) }
+     }
+-    SliderRow("Picture width", "${s.epImageWidth}%", s.epImageWidth.toFloat(), 10F..100F) {
++    SliderRow("Picture width", "${s.epImageWidth}%", s.epImageWidth.toFloat(), 10F..100F, step = 5F) {
+       prefs.update { old -> old.copy(epImageWidth = it.roundToInt()) }
+     }
+     Choice(
+@@ -494,15 +493,14 @@ private fun SliderRow(
+   valueText: String,
+   value: Float,
+   range: ClosedFloatingPointRange<Float>,
+-  steps: Int = 0,
++  step: Float,
+   onChange: (Float) -> Unit,
+ ) {
+-  Column {
+-    Row {
+-      Text(label, Modifier.weight(1F))
+-      Text(valueText, color = MaterialTheme.colorScheme.primary)
+-    }
+-    Slider(value = value.coerceIn(range), onValueChange = onChange, valueRange = range, steps = steps)
++  Row(verticalAlignment = Alignment.CenterVertically) {
++    Text(label, Modifier.weight(1F))
++    TextButton(onClick = { onChange((value - step).coerceIn(range)) }) { Text("−") }
++    Text(valueText, color = MaterialTheme.colorScheme.primary)
++    TextButton(onClick = { onChange((value + step).coerceIn(range)) }) { Text("+") }
+   }
+ }
+ 
