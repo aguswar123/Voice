@@ -57,6 +57,7 @@ import voice.core.ui.DynamicColorAvailability
 import voice.core.ui.GridCount
 import voice.core.ui.GridMode
 import voice.core.ui.GridModeStore
+import voice.core.ui.NewUiStore
 import voice.core.ui.PureBlackStore
 import voice.core.ui.ThemeColorScheme
 import voice.core.ui.ThemeColorSchemeStore
@@ -71,6 +72,7 @@ class SettingsViewModelTest {
   private val themeModeStore = MemoryDataStore(ThemeMode.FollowSystem)
   private val themeColorSchemeStore = MemoryDataStore(ThemeColorScheme.VoiceBlue)
   private val pureBlackStore = MemoryDataStore(false)
+  private val newUiStore = MemoryDataStore(false)
   private val coverColorsStore = MemoryDataStore(true)
   private val autoRewindAmountStore = MemoryDataStore(10)
   private val seekTimeStore = MemoryDataStore(30)
@@ -117,6 +119,7 @@ class SettingsViewModelTest {
       themeModeStore = ThemeModeStore(themeModeStore),
       themeColorSchemeStore = ThemeColorSchemeStore(themeColorSchemeStore),
       pureBlackStore = PureBlackStore(pureBlackStore),
+      newUiStore = NewUiStore(newUiStore),
       coverColorsStore = CoverColorsStore(coverColorsStore),
       autoRewindAmountStore = AutoRewindAmountStore(autoRewindAmountStore),
       seekTimeStore = SeekTimeStore(seekTimeStore),
@@ -578,6 +581,25 @@ class SettingsViewModelTest {
 
         viewModel.togglePureBlack()
         assertFalse(awaitItem().pureBlack)
+      }
+  }
+
+  @Test
+  fun `new ui is off by default and can be turned on and off again`() = scope.runTest {
+    backgroundScope
+      .launchMolecule(RecompositionMode.Immediate) {
+        viewModel.viewState()
+      }
+      .filterNotNull()
+      .test {
+        assertFalse(awaitItem().newUi)
+
+        viewModel.toggleNewUi()
+        assertTrue(awaitItem().newUi)
+        assertTrue(newUiStore.data.first())
+
+        viewModel.toggleNewUi()
+        assertFalse(awaitItem().newUi)
       }
   }
 

@@ -461,6 +461,22 @@ class BookPlayViewModel(
     }
   }
 
+  /** Seeks to a position of the whole book, which may lie in another chapter. */
+  fun seekToBookPosition(position: Duration) {
+    inOrder {
+      val book = currentBook() ?: return@inOrder
+      var remaining = position.inWholeMilliseconds.coerceIn(0L, book.duration)
+      for (chapter in book.chapters) {
+        if (remaining < chapter.duration || chapter == book.chapters.last()) {
+          selectBook()
+          player.setPosition(remaining.coerceAtMost(chapter.duration), chapter.id)
+          return@inOrder
+        }
+        remaining -= chapter.duration
+      }
+    }
+  }
+
   fun toggleSleepTimer() {
     scope.launch {
       if (sleepTimer.state.value.enabled) {

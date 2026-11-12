@@ -81,11 +81,13 @@ internal fun AppearanceSection(
   themeMode: ThemeMode,
   themeColorScheme: ThemeColorScheme,
   pureBlack: Boolean,
+  newUi: Boolean,
   coverColors: Boolean,
   dynamicColorAvailable: Boolean,
   onThemeModeSelect: (ThemeMode) -> Unit,
   onThemeColorSchemeSelect: (ThemeColorScheme) -> Unit,
   onPureBlackToggle: () -> Unit,
+  onNewUiToggle: () -> Unit,
   onCoverColorsToggle: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -139,6 +141,23 @@ internal fun AppearanceSection(
           },
         )
       }
+      IslandSwitchRow(
+        modifier = Modifier.padding(top = 12.dp),
+        title = stringResource(StringsR.string.settings_appearance_new_ui_title),
+        checked = newUi,
+        onCheckedChange = { onNewUiToggle() },
+        leading = {
+          ShapedIcon(
+            icon = UiR.drawable.ic_auto_awesome,
+            shape = MaterialShapes.Cookie12Sided,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+          )
+        },
+        summary = {
+          Text(stringResource(StringsR.string.settings_appearance_new_ui_summary))
+        },
+      )
       Spacer(Modifier.height(24.dp))
       SectionLabel(stringResource(StringsR.string.settings_appearance_color_scheme_title))
       FlowRow(

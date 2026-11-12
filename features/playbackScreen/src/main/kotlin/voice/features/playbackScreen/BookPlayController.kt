@@ -5,6 +5,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.res.stringResource
@@ -16,9 +18,12 @@ import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provides
 import voice.core.common.rootGraphAs
 import voice.core.data.BookId
+import voice.core.data.repo.BookRepository
 import voice.core.strings.R as StringsR
 import voice.core.ui.CoverTheme
 import voice.core.ui.HoldSplashScreenWhile
+import voice.core.ui.NewUiStore
+import voice.features.playbackScreen.newui.NewBookPlayView
 import voice.features.playbackScreen.view.BookPlayView
 import voice.navigation.Destination
 import voice.navigation.NavEntryProvider
@@ -29,6 +34,9 @@ fun BookPlayScreen(bookId: BookId) {
     retain(bookId.value) {
       rootGraphAs<BookPlayGraph>().bookPlayViewModelFactory.create(bookId)
     }
+  val graph = remember { rootGraphAs<BookPlayGraph>() }
+  val newUi by remember { graph.newUiStore.data }.collectAsState(initial = false)
+  val book by remember(bookId) { graph.bookRepository.flow(bookId) }.collectAsState(initial = null)
   val snackbarHostState = remember { SnackbarHostState() }
   val dialogState = viewModel.dialogState.value
   val viewState = viewModel.viewState()
@@ -69,29 +77,51 @@ fun BookPlayScreen(bookId: BookId) {
     }
   }
   CoverTheme(cover = viewState.cover) {
-    BookPlayView(
-      viewState,
-      bookId = bookId,
-      onPlayClick = viewModel::playPause,
-      onFastForwardClick = viewModel::fastForward,
-      onRewindClick = viewModel::rewind,
-      onSeek = viewModel::seekTo,
-      onBookmarkClick = viewModel::onBookmarkClick,
-      onBookmarkLongClick = viewModel::onBookmarkLongClick,
-      onSkipSilenceClick = viewModel::toggleSkipSilence,
-      onSleepTimerClick = viewModel::toggleSleepTimer,
-      onVolumeBoostClick = viewModel::onVolumeGainIconClick,
-      onSpeedChangeClick = viewModel::onPlaybackSpeedIconClick,
-      onCloseClick = viewModel::onCloseClick,
-      onBookActionsClick = viewModel::onBookActionsClick,
-      onAuthorClick = viewModel::onAuthorClick,
-      onSkipToNext = viewModel::next,
-      onSkipToPrevious = viewModel::previous,
-      onCurrentChapterClick = viewModel::onCurrentChapterClick,
-      onJumpBack = viewModel::onJumpBackClick,
-      onJumpBackExpire = viewModel::onJumpBackExpire,
-      snackbarHostState = snackbarHostState,
-    )
+    if (newUi) {
+      NewBookPlayView(
+        viewState = viewState,
+        bookId = bookId,
+        book = book,
+        onPlayClick = viewModel::playPause,
+        onRewindClick = viewModel::rewind,
+        onFastForwardClick = viewModel::fastForward,
+        onSeekInChapter = viewModel::seekTo,
+        onSeekInBook = viewModel::seekToBookPosition,
+        onSleepTimerClick = viewModel::toggleSleepTimer,
+        onBookmarkClick = viewModel::onBookmarkClick,
+        onBookmarkLongClick = viewModel::onBookmarkLongClick,
+        onSpeedChangeClick = viewModel::onPlaybackSpeedIconClick,
+        onSkipToNext = viewModel::next,
+        onSkipToPrevious = viewModel::previous,
+        onCloseClick = viewModel::onCloseClick,
+        onChapterClick = viewModel::onChapterClick,
+        snackbarHostState = snackbarHostState,
+      )
+    } else {
+      BookPlayView(
+        viewState,
+        bookId = bookId,
+        onPlayClick = viewModel::playPause,
+        onFastForwardClick = viewModel::fastForward,
+        onRewindClick = viewModel::rewind,
+        onSeek = viewModel::seekTo,
+        onBookmarkClick = viewModel::onBookmarkClick,
+        onBookmarkLongClick = viewModel::onBookmarkLongClick,
+        onSkipSilenceClick = viewModel::toggleSkipSilence,
+        onSleepTimerClick = viewModel::toggleSleepTimer,
+        onVolumeBoostClick = viewModel::onVolumeGainIconClick,
+        onSpeedChangeClick = viewModel::onPlaybackSpeedIconClick,
+        onCloseClick = viewModel::onCloseClick,
+        onBookActionsClick = viewModel::onBookActionsClick,
+        onAuthorClick = viewModel::onAuthorClick,
+        onSkipToNext = viewModel::next,
+        onSkipToPrevious = viewModel::previous,
+        onCurrentChapterClick = viewModel::onCurrentChapterClick,
+        onJumpBack = viewModel::onJumpBackClick,
+        onJumpBackExpire = viewModel::onJumpBackExpire,
+        snackbarHostState = snackbarHostState,
+      )
+    }
     when (dialogState) {
       null -> {}
       is BookPlayDialogViewState.SpeedDialog -> {
@@ -133,6 +163,8 @@ fun BookPlayScreen(bookId: BookId) {
 @ContributesTo(AppScope::class)
 interface BookPlayGraph {
   val bookPlayViewModelFactory: BookPlayViewModel.Factory
+  val newUiStore: NewUiStore
+  val bookRepository: BookRepository
 }
 
 @BindingContainer

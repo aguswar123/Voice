@@ -36,6 +36,7 @@ import voice.core.ui.DynamicColorAvailability
 import voice.core.ui.GridCount
 import voice.core.ui.GridMode
 import voice.core.ui.GridModeStore
+import voice.core.ui.NewUiStore
 import voice.core.ui.PureBlackStore
 import voice.core.ui.ThemeColorScheme
 import voice.core.ui.ThemeColorSchemeStore
@@ -50,6 +51,7 @@ class SettingsViewModel(
   private val themeModeStore: ThemeModeStore,
   private val themeColorSchemeStore: ThemeColorSchemeStore,
   private val pureBlackStore: PureBlackStore,
+  private val newUiStore: NewUiStore,
   private val coverColorsStore: CoverColorsStore,
   private val autoRewindAmountStore: AutoRewindAmountStore,
   private val seekTimeStore: SeekTimeStore,
@@ -90,6 +92,7 @@ class SettingsViewModel(
       .collectAsState(initial = null)
       .value
     val pureBlack = remember { pureBlackStore.data }.collectAsState(initial = null).value
+    val newUi = remember { newUiStore.data }.collectAsState(initial = null).value
     val coverColors = remember { coverColorsStore.data }.collectAsState(initial = null).value
     val autoRewindAmount = remember {
       autoRewindAmountStore.data
@@ -156,6 +159,7 @@ class SettingsViewModel(
       themeMode == null ||
         themeColorScheme == null ||
         pureBlack == null ||
+        newUi == null ||
         coverColors == null ||
         autoRewindAmount == null ||
         seekTime == null ||
@@ -177,6 +181,7 @@ class SettingsViewModel(
       themeMode = themeMode,
       themeColorScheme = themeColorScheme,
       pureBlack = pureBlack,
+      newUi = newUi,
       coverColors = coverColors,
       dynamicColorAvailable = dynamicColorAvailable,
       seekTimeInSeconds = seekTime,
@@ -255,6 +260,12 @@ class SettingsViewModel(
   override fun togglePureBlack() {
     mainScope.launch {
       pureBlackStore.updateData { !it }
+    }
+  }
+
+  override fun toggleNewUi() {
+    mainScope.launch {
+      newUiStore.updateData { !it }
     }
   }
 

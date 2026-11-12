@@ -13,6 +13,8 @@ interface SettingsListener {
 
   fun togglePureBlack()
 
+  fun toggleNewUi()
+
   fun toggleCoverColors()
 
   fun setUseGrid(useGrid: Boolean)
@@ -63,6 +65,8 @@ interface SettingsListener {
         override fun setThemeColorScheme(themeColorScheme: ThemeColorScheme) {}
 
         override fun togglePureBlack() {}
+
+        override fun toggleNewUi() {}
 
         override fun toggleCoverColors() {}
 
