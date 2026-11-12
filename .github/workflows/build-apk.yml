@@ -1,0 +1,28 @@
+name: build apk
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/build_setup
+      - name: Build the debug APK
+        run: ./gradlew :app:assembleFreeDebug
+      - name: Upload the APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: voice-apk
+          path: app/build/outputs/apk/free/debug/*.apk
+          if-no-files-found: error
+      - name: Upload the build reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-reports
+          path: |
+            **/build/reports/**
+          if-no-files-found: ignore
