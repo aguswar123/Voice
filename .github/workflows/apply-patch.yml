@@ -1,0 +1,57 @@
+name: apply patch
+
+on:
+  workflow_dispatch:
+    inputs:
+      patch_file:
+        description: "Patch file name in the repo root"
+        required: true
+        default: "new-ui-player.patch"
+      commit_message:
+        description: "Commit message"
+        required: true
+        default: "Add New UI player with captions and EPUB reader"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Check that the patch file exists
+        env:
+          PATCH_FILE: ${{ inputs.patch_file }}
+        run: |
+          if [ ! -f "$PATCH_FILE" ]; then
+            echo "Patch file '$PATCH_FILE' not found in the repo root."
+            exit 1
+          fi
+
+      - name: Check the patch
+        env:
+          PATCH_FILE: ${{ inputs.patch_file }}
+        run: git apply --check "$PATCH_FILE"
+
+      - name: Apply the patch
+        env:
+          PATCH_FILE: ${{ inputs.patch_file }}
+        run: git apply "$PATCH_FILE"
+
+      - name: Delete the patch file
+        env:
+          PATCH_FILE: ${{ inputs.patch_file }}
+        run: rm -f "$PATCH_FILE"
+
+      - name: Commit and push
+        env:
+          COMMIT_MESSAGE: ${{ inputs.commit_message }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "$COMMIT_MESSAGE"
+          git push
